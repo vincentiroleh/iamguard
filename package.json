@@ -1,0 +1,32 @@
+{
+  "name": "iamguard",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A command-line tool for scanning and analyzing AWS IAM configurations for security risks",
+  "main": "bin/iamguard.js",
+  "bin": {
+    "iamguard": "bin/iamguard.js"
+  },
+  "scripts": {
+    "start": "node bin/iamguard.js"
+  },
+  "keywords": [
+    "aws",
+    "iam",
+    "security",
+    "cli",
+    "aws-iam",
+    "security-scanner",
+    "audit"
+  ],
+  "author": "Vincent Iroleh",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-iam": "^3.775.0",
+    "@aws-sdk/client-sts": "^3.777.0",
+    "chalk": "^5.4.1",
+    "commander": "^13.1.0",
+    "globby": "^14.1.0",
+    "ora": "^8.2.0"
+  }
+}
