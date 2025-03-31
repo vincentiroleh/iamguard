@@ -10,6 +10,14 @@
   "scripts": {
     "start": "node bin/iamguard.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vincentiroleh/iamguard.git"
+  },
+  "homepage": "https://github.com/vincentiroleh/iamguard#readme",
+  "bugs": {
+    "url": "https://github.com/vincentiroleh/iamguard/issues"
+  },
   "keywords": [
     "aws",
     "iam",
