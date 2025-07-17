@@ -1,6 +1,6 @@
 {
   "name": "iamguard",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "type": "module",
   "description": "A command-line tool for scanning and analyzing AWS IAM configurations for security risks",
   "main": "bin/iamguard.js",
