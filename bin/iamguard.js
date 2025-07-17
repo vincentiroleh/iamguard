@@ -17,22 +17,28 @@ import { CICDHandler } from '../lib/cicdHandler.js';
 
 const program = new Command();
 
+// Read version from package.json
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packageJson = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8'));
+const VERSION = packageJson.version;
+
 const banner = `
 ╔═══════════════════════════════════════╗
 ║             IAM Guard                  ║
-║         Security Scan Tool v1.0        ║
+║       Security Scan Tool v${VERSION}        ║
 ╚═══════════════════════════════════════╝
 `;
 
 try {
-  const credentialsSpinner = spinner.start('Checking AWS credentials...');
-  await checkAwsCredentials();
-  spinner.succeed(credentialsSpinner, 'AWS credentials verified');
-
   program
     .name("iamguard")
     .description(chalk.cyan(banner))
-    .version("1.0.0");
+    .version(VERSION);
 
   program
     .command("scan")
@@ -43,6 +49,11 @@ try {
         if (!options.quiet) {
           console.log(chalk.cyan(banner));
         }
+
+        // Check AWS credentials
+        const credentialsSpinner = spinner.start('Checking AWS credentials...');
+        await checkAwsCredentials();
+        spinner.succeed(credentialsSpinner, 'AWS credentials verified');
 
         const scanSpinner = spinner.start('Starting IAM security scan...');
         const startTime = Date.now();
@@ -77,6 +88,11 @@ try {
           console.log(chalk.cyan(banner));
         }
 
+        // Check AWS credentials
+        const credentialsSpinner = spinner.start('Checking AWS credentials...');
+        await checkAwsCredentials();
+        spinner.succeed(credentialsSpinner, 'AWS credentials verified');
+
         const userSpinner = spinner.start('Checking IAM users...');
         const startTime = Date.now();
         
@@ -101,6 +117,11 @@ try {
           console.log(chalk.cyan(banner));
         }
 
+        // Check AWS credentials
+        const credentialsSpinner = spinner.start('Checking AWS credentials...');
+        await checkAwsCredentials();
+        spinner.succeed(credentialsSpinner, 'AWS credentials verified');
+
         const roleSpinner = spinner.start('Checking IAM roles...');
         const startTime = Date.now();
         
@@ -124,6 +145,11 @@ try {
         if (!options.quiet) {
           console.log(chalk.cyan(banner));
         }
+
+        // Check AWS credentials
+        const credentialsSpinner = spinner.start('Checking AWS credentials...');
+        await checkAwsCredentials();
+        spinner.succeed(credentialsSpinner, 'AWS credentials verified');
 
         const policySpinner = spinner.start('Checking IAM password policy...');
         const startTime = Date.now();
@@ -154,6 +180,11 @@ try {
         if (!options.quiet) {
           console.log(chalk.cyan(banner));
         }
+
+        // Check AWS credentials
+        const credentialsSpinner = spinner.start('Checking AWS credentials...');
+        await checkAwsCredentials();
+        spinner.succeed(credentialsSpinner, 'AWS credentials verified');
 
         const reportSpinner = spinner.start('Starting comprehensive IAM security scan...');
         const startTime = Date.now();
