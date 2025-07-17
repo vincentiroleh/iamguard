@@ -13,6 +13,8 @@
     "lint": "eslint bin/ lib/ --fix",
     "scan:quick": "node bin/iamguard.js generate-report -q",
     "scan:full": "node bin/iamguard.js generate-report",
+    "scan:cicd": "node bin/iamguard.js generate-report --cicd",
+    "scan:cicd-strict": "node bin/iamguard.js generate-report --cicd --fail-on-critical --fail-on-high",
     "check:users": "node bin/iamguard.js check-users",
     "check:roles": "node bin/iamguard.js check-roles",
     "check:policies": "node bin/iamguard.js scan"

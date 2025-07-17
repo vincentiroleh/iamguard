@@ -19,5 +19,14 @@
   "compliance": {
     "frameworks": ["CIS", "NIST", "SOC2"],
     "enableCompliance": true
+  },
+  "cicd": {
+    "failOnCritical": true,
+    "failOnHigh": false,
+    "maxMediumIssues": 10,
+    "maxLowIssues": 50,
+    "enableExitCodes": true,
+    "outputFormat": "json",
+    "suppressBanner": false
   }
 }

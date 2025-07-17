@@ -13,6 +13,7 @@ import {
 } from "../lib/iamScanner.js";
 import { checkAwsCredentials, handleError } from './utils.js';
 import { spinner } from './spinner.js';
+import { CICDHandler } from '../lib/cicdHandler.js';
 
 const program = new Command();
 
@@ -143,6 +144,11 @@ try {
     .description("Run all checks and generate a comprehensive security report")
     .option("-q, --quiet", "Suppress detailed output")
     .option("-f, --format <type>", "Output format (json)", "json")
+    .option("--cicd", "Enable CI/CD mode with exit codes")
+    .option("--fail-on-critical", "Exit with code 1 on critical issues")
+    .option("--fail-on-high", "Exit with code 2 on high severity issues")
+    .option("--max-medium <number>", "Maximum allowed medium severity issues", "10")
+    .option("--max-low <number>", "Maximum allowed low severity issues", "50")
     .action(async (options) => {
       try {
         if (!options.quiet) {
@@ -199,7 +205,24 @@ try {
         }
 
         spinner.info(reportSpinner, 'Generating security report...');
-        await generateSecurityReport(accountInfo);
+        
+        // Configure CI/CD options
+        const cicdConfig = {
+          failOnCritical: options.failOnCritical || options.cicd,
+          failOnHigh: options.failOnHigh,
+          maxMediumIssues: parseInt(options.maxMedium),
+          maxLowIssues: parseInt(options.maxLow),
+          enableExitCodes: options.cicd,
+          suppressBanner: options.cicd && options.quiet
+        };
+
+        const reportOptions = {
+          cicdMode: options.cicd,
+          cicdConfig: cicdConfig,
+          quiet: options.quiet
+        };
+
+        const analysis = await generateSecurityReport(accountInfo, reportOptions);
 
         const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 
@@ -207,6 +230,13 @@ try {
           spinner.succeed(reportSpinner, `✅ Security scan completed successfully in ${duration} seconds`);
         } else {
           spinner.warn(reportSpinner, `⚠️ Security scan completed with some errors in ${duration} seconds`);
+        }
+
+        // Handle CI/CD exit codes
+        if (options.cicd && analysis) {
+          const cicdHandler = new CICDHandler(cicdConfig);
+          cicdHandler.handleExit(analysis);
+        } else if (!success) {
           process.exit(1);
         }
       } catch (error) {

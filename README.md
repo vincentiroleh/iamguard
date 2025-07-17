@@ -62,6 +62,10 @@ npm run scan:quick
 # Full comprehensive security report
 npm run scan:full
 
+# CI/CD optimized scans
+npm run scan:cicd        # CI/CD mode with exit codes
+npm run scan:cicd-strict # Strict mode (fail on critical + high)
+
 # Check specific components
 npm run check:users    # Analyze IAM users
 npm run check:roles    # Analyze IAM roles  
@@ -100,6 +104,181 @@ Key configuration options:
 - `IAM_MAX_CONCURRENT_REQUESTS`: API rate limiting (default: 10)
 - `IAM_COMPLIANCE_FRAMEWORK`: Compliance framework to use (CIS, NIST, SOC2)
 
+## CI/CD Integration
+
+IAMGuard is designed to work seamlessly in CI/CD pipelines with configurable exit codes and failure thresholds.
+
+### CI/CD Mode
+
+Enable CI/CD mode for automated security gates:
+
+```bash
+# Basic CI/CD scan with exit codes
+iamguard generate-report --cicd
+
+# Fail on critical issues only
+iamguard generate-report --cicd --fail-on-critical
+
+# Fail on high severity issues
+iamguard generate-report --cicd --fail-on-high
+
+# Set custom thresholds
+iamguard generate-report --cicd --max-medium 5 --max-low 20
+```
+
+### Exit Codes
+
+| Exit Code | Meaning |
+|-----------|---------|
+| 0 | Success - No blocking security issues |
+| 1 | Critical security issues found |
+| 2 | High severity issues found |
+| 3 | Too many medium severity issues |
+| 4 | Too many low severity issues |
+
+### Environment Variables for CI/CD
+
+```bash
+# Failure thresholds
+export IAM_FAIL_ON_CRITICAL=true
+export IAM_FAIL_ON_HIGH=false
+export IAM_MAX_MEDIUM_ISSUES=10
+export IAM_MAX_LOW_ISSUES=50
+
+# CI/CD behavior
+export IAM_ENABLE_EXIT_CODES=true
+export IAM_SUPPRESS_BANNER=true
+```
+
+### GitHub Actions Example
+
+```yaml
+name: IAM Security Scan
+on: [push, pull_request]
+
+jobs:
+  iam-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install IAMGuard
+        run: npm install -g iamguard
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      
+      - name: Run IAM Security Scan
+        run: iamguard generate-report --cicd --fail-on-critical
+        env:
+          IAM_MAX_MEDIUM_ISSUES: 5
+          IAM_SUPPRESS_BANNER: true
+      
+      - name: Upload Security Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: iam-security-report
+          path: iam_*.json
+```
+
+### Jenkins Pipeline Example
+
+```groovy
+pipeline {
+    agent any
+    
+    environment {
+        IAM_FAIL_ON_CRITICAL = 'true'
+        IAM_MAX_MEDIUM_ISSUES = '10'
+        IAM_SUPPRESS_BANNER = 'true'
+    }
+    
+    stages {
+        stage('IAM Security Scan') {
+            steps {
+                script {
+                    sh 'npm install -g iamguard'
+                    
+                    withCredentials([
+                        string(credentialsId: 'aws-access-key', variable: 'AWS_ACCESS_KEY_ID'),
+                        string(credentialsId: 'aws-secret-key', variable: 'AWS_SECRET_ACCESS_KEY')
+                    ]) {
+                        def exitCode = sh(
+                            script: 'iamguard generate-report --cicd --quiet',
+                            returnStatus: true
+                        )
+                        
+                        if (exitCode == 1) {
+                            error("Critical IAM security issues found!")
+                        } else if (exitCode > 0) {
+                            unstable("IAM security issues detected (exit code: ${exitCode})")
+                        }
+                    }
+                    
+                    archiveArtifacts artifacts: 'iam_*.json'
+                }
+            }
+        }
+    }
+}
+```
+
+### GitLab CI Example
+
+```yaml
+iam-security-scan:
+  image: node:18
+  stage: security
+  variables:
+    IAM_FAIL_ON_CRITICAL: "true"
+    IAM_MAX_MEDIUM_ISSUES: "5"
+    IAM_SUPPRESS_BANNER: "true"
+  before_script:
+    - npm install -g iamguard
+  script:
+    - iamguard generate-report --cicd --quiet
+  artifacts:
+    when: always
+    reports:
+      junit: iam_cicd_result_*.json
+    paths:
+      - iam_*.json
+  only:
+    - main
+    - develop
+```
+
+### Environment-Specific Configuration
+
+**Development Environment:**
+```bash
+export IAM_FAIL_ON_CRITICAL=false
+export IAM_FAIL_ON_HIGH=false
+export IAM_MAX_MEDIUM_ISSUES=20
+```
+
+**Staging Environment:**
+```bash
+export IAM_FAIL_ON_CRITICAL=true
+export IAM_FAIL_ON_HIGH=false
+export IAM_MAX_MEDIUM_ISSUES=10
+```
+
+**Production Environment:**
+```bash
+export IAM_FAIL_ON_CRITICAL=true
+export IAM_FAIL_ON_HIGH=true
+export IAM_MAX_MEDIUM_ISSUES=5
+```
+
 ## Required IAM Permissions
 
 The following IAM permissions are required:
@@ -116,7 +295,13 @@ The following IAM permissions are required:
                 "iam:ListRoles",
                 "iam:ListPolicies",
                 "iam:GetPolicy",
-                "iam:GetPolicyVersion"
+                "iam:GetPolicyVersion",
+                "iam:ListAttachedUserPolicies",
+                "iam:ListAccessKeys",
+                "iam:ListMFADevices",
+                "iam:GetLoginProfile",
+                "iam:GetRole",
+                "sts:GetCallerIdentity"
             ],
             "Resource": "*"
         }
