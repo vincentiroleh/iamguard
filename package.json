@@ -8,7 +8,14 @@
     "iamguard": "bin/iamguard.js"
   },
   "scripts": {
-    "start": "node bin/iamguard.js"
+    "start": "node bin/iamguard.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint bin/ lib/ --fix",
+    "scan:quick": "node bin/iamguard.js generate-report -q",
+    "scan:full": "node bin/iamguard.js generate-report",
+    "check:users": "node bin/iamguard.js check-users",
+    "check:roles": "node bin/iamguard.js check-roles",
+    "check:policies": "node bin/iamguard.js scan"
   },
   "repository": {
     "type": "git",
@@ -36,5 +43,13 @@
     "commander": "^13.1.0",
     "globby": "^14.1.0",
     "ora": "^8.2.0"
+  },
+  "devDependencies": {
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }

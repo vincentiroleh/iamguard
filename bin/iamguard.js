@@ -8,7 +8,8 @@ import {
   checkIamUsers,
   checkIamRoles,
   checkPasswordPolicy,
-  generateSecurityReport
+  generateSecurityReport,
+  getAccountInfo
 } from "../lib/iamScanner.js";
 import { checkAwsCredentials, handleError } from './utils.js';
 import { spinner } from './spinner.js';
@@ -151,6 +152,14 @@ try {
         const reportSpinner = spinner.start('Starting comprehensive IAM security scan...');
         const startTime = Date.now();
         let success = true;
+        let accountInfo = null;
+
+        try {
+          spinner.info(reportSpinner, 'Getting account information...');
+          accountInfo = await getAccountInfo();
+        } catch (error) {
+          console.warn(chalk.yellow('Warning: Could not retrieve account information'));
+        }
 
         try {
           spinner.info(reportSpinner, 'Fetching and analyzing IAM policies...');
@@ -190,7 +199,7 @@ try {
         }
 
         spinner.info(reportSpinner, 'Generating security report...');
-        await generateSecurityReport();
+        await generateSecurityReport(accountInfo);
 
         const duration = ((Date.now() - startTime) / 1000).toFixed(2);
 

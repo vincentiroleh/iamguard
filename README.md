@@ -4,11 +4,16 @@ A command-line tool for scanning and analyzing AWS IAM configurations for securi
 
 ## Features
 
-- 🔍 Scan IAM policies for security risks
-- 👥 Check IAM users for security best practices
-- 🔐 Analyze IAM roles for potential vulnerabilities
-- 🔑 Verify password policy compliance
-- 📊 Generate comprehensive security reports
+- 🔍 **Policy Analysis**: Scan IAM policies for dangerous permissions and security risks
+- 👥 **User Security**: Check IAM users for inactive accounts, MFA status, and access patterns
+- 🔐 **Role Assessment**: Analyze IAM roles for overly permissive trust relationships
+- 🔑 **Access Key Management**: Monitor access key age and rotation compliance
+- 🛡️ **MFA Enforcement**: Identify users without multi-factor authentication
+- 📋 **Compliance Checks**: CIS AWS Foundations Benchmark compliance validation
+- 📊 **Multi-Format Reports**: Generate JSON, HTML, and CSV security reports
+- 🏢 **Multi-Account Support**: Scan across different AWS accounts and regions
+- ⚡ **Rate Limiting**: Built-in AWS API rate limiting and retry logic
+- 🎯 **Configurable Thresholds**: Customize security thresholds via configuration
 
 ## Prerequisites
 
@@ -24,7 +29,7 @@ npm install -g iamguard
 
 ## Usage
 
-
+### CLI Commands
 
 ```bash
 # Scan IAM policies
@@ -46,17 +51,54 @@ iamguard generate-report
 iamguard generate-report -q
 ```
 
-## AWS Credentials
+### Quick Start Commands (NPM Scripts)
+
+For development and quick access, use these npm scripts:
+
+```bash
+# Quick security scan with minimal output
+npm run scan:quick
+
+# Full comprehensive security report
+npm run scan:full
+
+# Check specific components
+npm run check:users    # Analyze IAM users
+npm run check:roles    # Analyze IAM roles  
+npm run check:policies # Analyze IAM policies
+
+# Development commands
+npm run lint          # Run ESLint code quality checks
+npm start            # Run the main CLI tool
+```
+
+## Configuration
+
+### AWS Credentials
 
 Make sure you have AWS credentials configured either through:
 
-- AWS CLI ( `aws configure`)
-
+- AWS CLI (`aws configure`)
 - Environment variables:
-
    - AWS_ACCESS_KEY_ID
    - AWS_SECRET_ACCESS_KEY
    - AWS_REGION
+- IAM roles (when running on EC2)
+- AWS SSO profiles
+
+### Scanner Configuration
+
+Copy `.env.example` to `.env` and customize settings:
+
+```bash
+cp .env.example .env
+```
+
+Key configuration options:
+- `IAM_INACTIVE_DAYS_THRESHOLD`: Days before marking users as inactive (default: 30)
+- `IAM_ACCESS_KEY_AGE_THRESHOLD`: Days before flagging old access keys (default: 90)
+- `IAM_MAX_CONCURRENT_REQUESTS`: API rate limiting (default: 10)
+- `IAM_COMPLIANCE_FRAMEWORK`: Compliance framework to use (CIS, NIST, SOC2)
 
 ## Required IAM Permissions
 
